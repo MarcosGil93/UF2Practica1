@@ -21,13 +21,16 @@ namespace UF2Practica1
 		*/
 
 		public static ConcurrentQueue<Client> cua = new ConcurrentQueue<Client>();
-
+        
 		public static void Main(string[] args)
 		{
 			var clock = new Stopwatch();
 			var threads = new List<Thread>();
+            int i;
+            bool continuar = true;
+            String resposta = "";
 			//Recordeu-vos que el fitxer CSV ha d'estar a la carpeta bin/debug de la solució
-			const string fitxer = "CuaClients.csv";
+			const string fitxer = "cuaClients.txt";
 
 			try
 			{
@@ -53,24 +56,61 @@ namespace UF2Practica1
 				Environment.Exit(0);
 			}
 
-			clock.Start();
+
+            Console.WriteLine("Vols passar per caixa?");
+            resposta = Console.ReadLine();
+            resposta = resposta.ToLower();
+            if (resposta.Equals("sí") || resposta.Equals("s")||resposta.Equals("si"))
+            {
+                continuar = true;
+            }
+            else
+            {
+                continuar = false;
+            }
+
+            while (continuar){
+
+                clock.Start();
+                for (i = 1; i <= nCaixeres; i++)
+            {
+                var caixera = new Caixera()
+                {
+                    idCaixera = i
+                };
+                var fil = new Thread(() => caixera.ProcessarCua(cua));
+                fil.Start();
+                threads.Add(fil);
+            }
 
 
-			// Instanciar les caixeres i afegir el thread creat a la llista de threads
 
-
-
-
-			// Procediment per esperar que acabin tots els threads abans d'acabar
-			foreach (Thread thread in threads)
-				thread.Join();
+                // Procediment per esperar que acabin tots els threads abans d'acabar
+                foreach (Thread thread in threads)
+                    thread.Join();
 
 			// Parem el rellotge i mostrem el temps que triga
 			clock.Stop();
 			double temps = clock.ElapsedMilliseconds / 1000;
 			Console.Clear();
 			Console.WriteLine("Temps total Task: " + temps + " segons");
-			Console.ReadKey();
+            Console.WriteLine("Vols passar per caixa un altre cop?");
+            resposta = Console.ReadLine();
+            resposta = resposta.ToLower();
+            if (resposta.Equals("sí") || resposta.Equals("s")||resposta.Equals("si"))
+            {
+                continuar = true;
+            }
+            else
+            {
+                continuar = false;
+            }
+
+            }
+			// Instanciar les caixeres i afegir el thread creat a la llista de threads
+            Console.WriteLine("Gràcies per la seva visita!");
+            Console.ReadKey();
+
 		}
 	}
 	#region ClassCaixera
@@ -82,12 +122,17 @@ namespace UF2Practica1
 			set;
 		}
 
-		public void ProcessarCua()
+        public void ProcessarCua(ConcurrentQueue<Client> cua)
 		{
+            Client clientActual;
 			// Llegirem la cua extreient l'element
 			// cridem al mètode ProcesarCompra passant-li el client
-
-
+            while (cua.Count > 0)
+            {
+                 cua.TryDequeue(out clientActual);
+                 ProcesarCompra(clientActual);
+            }
+            
 
 		}
 
